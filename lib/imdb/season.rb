@@ -18,11 +18,16 @@ module Imdb
 
       document.search("div.eplist div[@itemprop*='episode']").each do |div|
         link = div.search("a[@itemprop*='name']").first
+        date_string = div.search("div[@class*='airdate']").first.content.strip.delete("\n").delete("\r")
+        next if !(date_string =~ /^[0-9]+\s+[a-zA-Z.]+\s+[0-9]+$/)
+        
+        date = Date.parse(date_string)
         @episodes << Imdb::Episode.new(
           link[:href].scan(/\d+/).first,
           @season_number,
           div.search("meta[@itemprop*='episodeNumber']").first[:content].to_i,
-          link.content.strip
+          link.content.strip,
+          date
         )
       end
 
